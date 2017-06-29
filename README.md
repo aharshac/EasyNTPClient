@@ -82,7 +82,7 @@ EasyNTPClient(UDP& udp, const char* serverPool)
 
 Parameters:
     udp: Reference to an UDP object.
-		serverPool: NTP server pool. Default = "pool.ntp.org"
+	serverPool: NTP server pool. Default = "pool.ntp.org"
 Returns:
     EasyNTPClient object.
 ```
@@ -93,8 +93,8 @@ EasyNTPClient(UDP& udp, const char* serverPool, int offset);
 
 Parameters:
     udp: Reference to an UDP object.
-		serverPool: NTP server pool domain name. Default = "pool.ntp.org"
-		offset: Difference from UTC in seconds. Default = 0
+	serverPool: NTP server pool domain name. Default = "pool.ntp.org"
+	offset: Difference from UTC in seconds. Default = 0
 Returns:
     EasyNTPClient object.
 ```
