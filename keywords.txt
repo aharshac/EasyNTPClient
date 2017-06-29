@@ -1,0 +1,20 @@
+#######################################
+# Syntax Coloring Map For StringSplitter
+####################################### 
+# Class (KEYWORD1)
+#######################################
+
+EasyNTPClient	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################	
+
+getTimeOffset	KEYWORD2
+setTimeOffset	KEYWORD2
+getUnixTime	    KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+ 

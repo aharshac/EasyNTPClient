@@ -1,0 +1,16 @@
+{
+  "name": "EasyNTPClient",
+  "keywords": "easy, udp, web, nodemcu, esp, esp8266, ntp, client, time",
+  "description": "Library to read time from Network Time Protocol (NTP) servers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aharshac/EasyNTPClient"
+  },
+  "version": "1.0.0",
+  "authors": {
+    "name": "Harsha Alva",
+    "url": "https://alvaharsha.me"
+  },
+  "frameworks": "arduino",
+  "platforms": "espressif"
+}
