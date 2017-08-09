@@ -1,13 +1,16 @@
 /*
- EasyNTPClient example: Basic
 
- This example shows the basic usage of the EasyNTPClient on a NodeMCU (ESP8266).
- The output is visible in the Serial Monitor at 9600 baud rate.
+EasyNTPClient example: NodeMCU
 
- For more details see: https://github.com/aharshac/EasyNTPClient
+This example shows the basic usage of the EasyNTPClient on a NodeMCU (ESP8266).
+The output is visible in the Serial Monitor at 9600 baud rate.
+
+For more details see: https://github.com/aharshac/EasyNTPClient
+ 
 */
 
 /* 
+*
 * Board/shield platform 
 *
 * Arduino WiFi shield: #include <WiFi.h>
@@ -17,6 +20,7 @@
 * ESP8266/NodeMCU: #include <ESP8266WiFi.h>
 *
 */
+
 #include <ESP8266WiFi.h>
 
 #include <EasyNTPClient.h>

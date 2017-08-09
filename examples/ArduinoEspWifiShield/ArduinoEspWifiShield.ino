@@ -1,10 +1,15 @@
 /*
- EasyNTPClient example: Basic
 
- This example shows the basic usage of the EasyNTPClient on an Arduino UNO with an ESP-01 (ESP8266) WiFi module.
- The output is visible in the Serial Monitor at 9600 baud rate.
+EasyNTPClient example: ArduinoEspWifiShield
 
- For more details see: https://github.com/aharshac/EasyNTPClient
+This example shows the basic usage of the EasyNTPClient on an Arduino UNO with an ESP-01 (ESP8266) WiFi module.
+The output is visible in the Serial Monitor at 9600 baud rate.
+
+For more details see: https://github.com/aharshac/EasyNTPClient
+
+An example by Claran Martis
+https://www.collaborizm.com/profile/SJne7FcMg
+ 
 */
 
 
