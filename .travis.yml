@@ -4,7 +4,7 @@ before_install:
   - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
 script:
 - build_platform esp8266
-- build_platform arduino
+- build_platform uno
 # - arduino --install-library "WiFiEsp"
 # - arduino --install-library "ESP8266WiFi"
 # - arduino --verify --board arduino:avr:uno $PWD/examples/ArduinoEspWifiShield/ArduinoEspWifiShield.ino
