@@ -4,7 +4,7 @@
  This example shows the basic usage of the EasyNTPClient on a NodeMCU (ESP8266).
  The output is visible in the Serial Monitor at 9600 baud rate.
 
- For more details see: https://github.com/aharshac/StringSplitter
+ For more details see: https://github.com/aharshac/EasyNTPClient
 */
 
 /* 
