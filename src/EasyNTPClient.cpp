@@ -46,8 +46,10 @@ unsigned long EasyNTPClient::getServerTime () {
     const long ntpFirstFourBytes = 0xEC0600E3; // NTP request header
 
     // Fail if WiFiUdp.begin() could not init a socket
-    if (! udpInited)
-    return 0;
+    if (! udpInited) {
+      this->mUdp->stop();
+      return 0;
+    }
 
     // Clear received data from possible stray received packets
     this->mUdp->flush();
@@ -55,8 +57,11 @@ unsigned long EasyNTPClient::getServerTime () {
     // Send an NTP request
     if (! (this->mUdp->beginPacket(this->mServerPool, 123) // 123 is the NTP port
     && this->mUdp->write((byte *)&ntpFirstFourBytes, 48) == 48
-    && this->mUdp->endPacket()))
-    return 0;       // sending request failed
+    && this->mUdp->endPacket())) {
+      this->mUdp->stop();
+      return 0;       // sending request failed
+    }
+    
 
     // Wait for response; check every pollIntv ms up to maxPoll times
     const int pollIntv = 150;   // poll every this many ms
@@ -67,8 +72,10 @@ unsigned long EasyNTPClient::getServerTime () {
       break;
     delay(pollIntv);
     }
-    if (pktLen != 48)
-    return 0;       // no correct packet received
+    if (pktLen != 48) {
+      this->mUdp->stop();
+      return 0;       // no correct packet received
+    }
 
     // Read and discard the first useless bytes
     // Set useless to 32 for speed; set to 40 for accuracy.
@@ -91,6 +98,7 @@ unsigned long EasyNTPClient::getServerTime () {
 
     // Discard the rest of the packet
     this->mUdp->flush();
+    this->mUdp->stop();
 
     return time + this->mOffset - 2208988800ul;   // convert NTP time to Unix time
 }
