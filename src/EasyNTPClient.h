@@ -17,6 +17,16 @@
 #include "Arduino.h"
 #include <Udp.h>
 
+/*
+ * NTP packet-related macros.
+ * see https://labs.apnic.net/?p=462 for details about the NTP packet structure.
+ */
+#define NTP_PACKET_SIZE 48 // Size of an NTP packet
+#define NTP_HEADER_LI   0b11000000 // leap indicator = 3 (unsynchronized)
+#define NTP_HEADER_VN   0b00100000 // version number = 4
+#define NTP_HEADER_MODE 0b00000011 // mode = 3 (client)
+#define NTP_TX_TIMESTAMP_OFFSET 40 // offset within the packet for the TX time
+
 class EasyNTPClient
 {
   public:
