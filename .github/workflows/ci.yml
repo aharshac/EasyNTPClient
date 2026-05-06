@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - uses: pre-commit/action@v3.0.1
+
+  compile:
+    name: Compile / ${{ matrix.config.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: NodeMCU (ESP8266)
+            fqbn: esp8266:esp8266:nodemcuv2
+            platform: esp8266:esp8266
+            platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
+            sketch: examples/NodeMCU/NodeMCU.ino
+          - name: Arduino UNO
+            fqbn: arduino:avr:uno
+            platform: arduino:avr
+            platform-url: ""
+            sketch: examples/ArduinoEspWifiShield/ArduinoEspWifiShield.ino
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compile sketch
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: ${{ matrix.config.fqbn }}
+          platforms: |
+            - name: ${{ matrix.config.platform }}
+              source-url: ${{ matrix.config['platform-url'] }}
+          sketch-paths: |
+            - ${{ matrix.config.sketch }}
+          libraries: |
+            - name: WiFiEsp
