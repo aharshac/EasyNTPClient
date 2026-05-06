@@ -25,14 +25,15 @@ jobs:
         config:
           - name: NodeMCU (ESP8266)
             fqbn: esp8266:esp8266:nodemcuv2
-            platform: esp8266:esp8266
-            platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
             sketch: examples/NodeMCU/NodeMCU.ino
+            platforms: |
+              - name: esp8266:esp8266
+                source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
           - name: Arduino UNO
             fqbn: arduino:avr:uno
-            platform: arduino:avr
-            platform-url: ""
             sketch: examples/ArduinoEspWifiShield/ArduinoEspWifiShield.ino
+            platforms: |
+              - name: arduino:avr
 
     steps:
       - uses: actions/checkout@v4
@@ -41,10 +42,9 @@ jobs:
         uses: arduino/compile-sketches@v1
         with:
           fqbn: ${{ matrix.config.fqbn }}
-          platforms: |
-            - name: ${{ matrix.config.platform }}
-              source-url: ${{ matrix.config['platform-url'] }}
+          platforms: ${{ matrix.config.platforms }}
           sketch-paths: |
             - ${{ matrix.config.sketch }}
           libraries: |
+            - source-path: ./
             - name: WiFiEsp
