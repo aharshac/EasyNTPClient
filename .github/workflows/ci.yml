@@ -10,7 +10,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: "3.x"
@@ -36,10 +36,10 @@ jobs:
               - name: arduino:avr
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Cache Arduino platforms and libraries
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.arduino15/packages
