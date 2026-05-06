@@ -6,7 +6,7 @@
   Based on work by:
   * Francesco Potortì, 2013
   * https://playground.arduino.cc/Code/NTPclient
-  * 
+  *
   * Sandeep Mistry, 2016
   * https://github.com/arduino-libraries/NTPClient
 */
@@ -98,7 +98,7 @@ unsigned long EasyNTPClient::getServerTime () {
 unsigned long EasyNTPClient::getUnixTime() {
   // if (this->mServerTime < 0) {
   unsigned long delta = millis() - this->mLastUpdate;
-  if (this->mServerTime <= 0 || this->mLastUpdate == 0 || delta >= this->mUpdateInterval) {  
+  if (this->mServerTime <= 0 || this->mLastUpdate == 0 || delta >= this->mUpdateInterval) {
     this->mServerTime = this->getServerTime();
     this->mLastUpdate = millis();
   }

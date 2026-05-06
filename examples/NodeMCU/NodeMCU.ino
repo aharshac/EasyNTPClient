@@ -6,12 +6,12 @@ This example shows the basic usage of the EasyNTPClient on a NodeMCU (ESP8266).
 The output is visible in the Serial Monitor at 9600 baud rate.
 
 For more details see: https://github.com/aharshac/EasyNTPClient
- 
+
 */
 
-/* 
+/*
 *
-* Board/shield platform 
+* Board/shield platform
 *
 * Arduino WiFi shield: #include <WiFi.h>
 *
@@ -46,6 +46,6 @@ void setup(){
 
 void loop() {
   Serial.println(ntpClient.getUnixTime());
-  
+
   delay(20000); // wait for 20 seconds before refreshing.
 }

@@ -1,0 +1,14 @@
+default: true
+
+# Line length — off for tables and code blocks; prose capped at 120
+MD013:
+  line_length: 120
+  code_blocks: false
+  tables: false
+
+# Allow duplicate headings in different sections
+MD024:
+  siblings_only: true
+
+# Allow both fenced and indented code blocks
+MD046: false

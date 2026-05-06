@@ -6,7 +6,7 @@
   Based on work by:
   * Francesco Potortì, 2013
   * https://playground.arduino.cc/Code/NTPclient
-  * 
+  *
   * Sandeep Mistry, 2016
   * https://github.com/arduino-libraries/NTPClient
 */
@@ -26,7 +26,7 @@ class EasyNTPClient
     int getTimeOffset();
     void setTimeOffset(int offset);
     unsigned long getUnixTime();
-    
+
   private:
     UDP *mUdp;
     const char* mServerPool = "pool.ntp.org";
