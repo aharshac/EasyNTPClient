@@ -7,9 +7,6 @@ The output is visible in the Serial Monitor at 9600 baud rate.
 
 For more details see: https://github.com/aharshac/EasyNTPClient
 
-An example by Claran Martis
-https://www.collaborizm.com/profile/SJne7FcMg
- 
 */
 
 
@@ -64,7 +61,7 @@ void setup(){
   ESP8266.begin(115200);
   WiFi.init(&ESP8266);
   WiFi.begin(ssid, password);
-  
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
@@ -74,6 +71,6 @@ void setup(){
 
 void loop() {
   Serial.println(ntpClient.getUnixTime());
-  
+
   delay(20000); // wait for 20 seconds before refreshing.
 }
