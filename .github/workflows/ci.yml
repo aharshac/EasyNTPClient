@@ -31,6 +31,12 @@ jobs:
             platforms: |
               - name: esp8266:esp8266
                 source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
+          - name: TestNodeMCU (ESP8266)
+            fqbn: esp8266:esp8266:nodemcuv2
+            sketch: examples/TestNodeMCU/TestNodeMCU.ino
+            platforms: |
+              - name: esp8266:esp8266
+                source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
           - name: Arduino UNO
             fqbn: arduino:avr:uno
             sketch: examples/ArduinoEspWifiShield/ArduinoEspWifiShield.ino
