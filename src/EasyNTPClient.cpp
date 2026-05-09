@@ -46,22 +46,26 @@ unsigned long EasyNTPClient::getServerTime () {
     // must be zero so the server does not interpret them as timestamp offsets.
     byte packetBuffer[NTP_PACKET_SIZE] = {0};
     packetBuffer[0] = NTP_HEADER_LI | NTP_HEADER_VN | NTP_HEADER_MODE;
-    // byte 1 (stratum) stays 0 — server ignores client stratum
+    // byte 1 (stratum) stays 0 - server ignores client stratum
     packetBuffer[2] = NTP_HEADER_POLL;
     packetBuffer[3] = NTP_HEADER_PRECISION;
 
     // Fail if WiFiUdp.begin() could not init a socket
-    if (! udpInited)
-    return 0;
+    if (!udpInited) {
+      this->mUdp->stop();
+      return 0;
+    }
 
     // Clear received data from possible stray received packets
     this->mUdp->flush();
 
     // Send an NTP request
-    if (! (this->mUdp->beginPacket(this->mServerPool, 123) // 123 is the NTP port
+    if (!(this->mUdp->beginPacket(this->mServerPool, NTP_SERVER_PORT)
     && this->mUdp->write(packetBuffer, NTP_PACKET_SIZE) == NTP_PACKET_SIZE
-    && this->mUdp->endPacket()))
-    return 0;       // sending request failed
+    && this->mUdp->endPacket())) {
+      this->mUdp->stop();
+      return 0;       // sending request failed
+    }
 
     // Wait for response; check every pollIntv ms up to maxPoll times
     const int pollIntv = 150;   // poll every this many ms
@@ -72,8 +76,10 @@ unsigned long EasyNTPClient::getServerTime () {
         break;
       delay(pollIntv);
     }
-    if (pktLen != NTP_PACKET_SIZE)
-    return 0;       // no correct packet received
+    if (pktLen != NTP_PACKET_SIZE) {
+      this->mUdp->stop();
+      return 0;       // no correct packet received
+    }
 
     this->mUdp->read(packetBuffer, NTP_PACKET_SIZE);
 
@@ -91,8 +97,8 @@ unsigned long EasyNTPClient::getServerTime () {
     // since its arrival, which we assume on average to be pollIntv/2.
     time += (packetBuffer[NTP_TX_TIMESTAMP_OFFSET + 4] > 115 - pollIntv / 8);
 
-    // Discard the rest of the packet
     this->mUdp->flush();
+    this->mUdp->stop();
 
     return time + this->mOffset - 2208988800ul;   // convert NTP time to Unix time
 }
