@@ -50,6 +50,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-arduino-${{ matrix.config.fqbn }}-
 
+      - name: Remove cached EasyNTPClient
+        run: rm -rf ~/Arduino/libraries/EasyNTPClient
+
       - name: Compile sketch
         uses: arduino/compile-sketches@v1
         with:
