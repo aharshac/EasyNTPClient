@@ -28,6 +28,11 @@
 #define NTP_HEADER_POLL         6           // poll interval as log2 seconds (2^6 = 64 s)
 #define NTP_HEADER_PRECISION    0xEC        // system clock precision in log2 seconds
 
+// Seconds between the NTP epoch (1900-01-01) and the Unix epoch (1970-01-01).
+// NTP timestamps are based on 1900; Unix timestamps on 1970. Subtracting this
+// constant converts a raw NTP timestamp to a Unix timestamp.
+#define NTP_UNIX_EPOCH_OFFSET   2208988800ul
+
 class EasyNTPClient
 {
   public:

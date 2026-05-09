@@ -100,7 +100,7 @@ unsigned long EasyNTPClient::getServerTime () {
     this->mUdp->flush();
     this->mUdp->stop();
 
-    return time + this->mOffset - 2208988800ul;   // convert NTP time to Unix time
+    return time - NTP_UNIX_EPOCH_OFFSET;
 }
 
 unsigned long EasyNTPClient::getUnixTime() {
@@ -110,5 +110,5 @@ unsigned long EasyNTPClient::getUnixTime() {
     this->mServerTime = this->getServerTime();
     this->mLastUpdate = millis();
   }
-  return this->mServerTime + ((millis() - this->mLastUpdate) / 1000);
+  return this->mServerTime + ((millis() - this->mLastUpdate) / 1000) + this->mOffset;
 }
