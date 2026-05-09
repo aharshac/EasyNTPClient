@@ -53,8 +53,8 @@ jobs:
       - name: Install EasyNTPClient library from source
         run: |
           rm -rf ~/Arduino/libraries/EasyNTPClient
-          mkdir -p ~/Arduino/libraries
-          ln -sf "$(pwd)" ~/Arduino/libraries/EasyNTPClient
+          # mkdir -p ~/Arduino/libraries
+          # ln -sf "$(pwd)" ~/Arduino/libraries/EasyNTPClient
 
       - name: Compile sketch
         uses: arduino/compile-sketches@v1
@@ -64,4 +64,15 @@ jobs:
           sketch-paths: |
             - ${{ matrix.config.sketch }}
           libraries: |
+            - source-path: ./src
+              destination-name: EasyNTPClient
             - name: WiFiEsp
+
+      - name: Install tree
+        id: install-tree
+        if: always() # Ensure this step runs even if previous steps fail
+        run: sudo apt-get install -y tree
+
+      - name: Show Arduino directory structure
+        if: install-tree.outcome == 'success'
+        run: tree -L 2 ~/Arduino
