@@ -40,7 +40,7 @@ void EasyNTPClient::setTimeOffset (int offset) {
 
 
 unsigned long EasyNTPClient::getServerTime () {
-    static int udpInited = this->mUdp->begin(123); // open socket on arbitrary port
+    int udpInited = this->mUdp->begin(NTP_REQUEST_PORT);
 
     // Only the first four bytes of an NTP request need to be set. The rest
     // must be zero so the server does not interpret them as timestamp offsets.
