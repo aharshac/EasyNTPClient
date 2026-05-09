@@ -50,8 +50,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-arduino-${{ matrix.config.fqbn }}-
 
-      - name: Remove cached EasyNTPClient
-        run: rm -rf ~/Arduino/libraries/EasyNTPClient
+      - name: Install EasyNTPClient library from source
+        run: |
+          rm -rf ~/Arduino/libraries/EasyNTPClient
+          mkdir -p ~/Arduino/libraries
+          ln -sf "$(pwd)" ~/Arduino/libraries/EasyNTPClient
 
       - name: Compile sketch
         uses: arduino/compile-sketches@v1
@@ -61,5 +64,4 @@ jobs:
           sketch-paths: |
             - ${{ matrix.config.sketch }}
           libraries: |
-            - source-path: ./
             - name: WiFiEsp
