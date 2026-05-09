@@ -74,5 +74,5 @@ jobs:
         run: sudo apt-get install -y tree
 
       - name: Show Arduino directory structure
-        if: install-tree.outcome == 'success'
+        if: steps.install-tree.outcome == 'success' # Only run if tree was installed successfully
         run: tree -L 2 ~/Arduino
