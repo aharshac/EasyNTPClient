@@ -89,6 +89,58 @@ void test_client_reuse() {
   check(t2 >= t1 && (t2 - t1) < 5, "timestamps consistent between clients");
 }
 
+// ── offset decoupling ────────────────────────────────────────────────────────
+
+void test_offset_immediate() {
+  Serial.println("\n-- offset change takes effect without resync --");
+  WiFiUDP udp;
+  EasyNTPClient client(udp, "pool.ntp.org");
+
+  // Sync once with offset = 0; capture base time.
+  client.setTimeOffset(0);
+  unsigned long base = client.getUnixTime();
+  check(base > MIN_UNIX_2024, "initial sync with offset=0 succeeds");
+
+  // Change offset without waiting for a resync (mUpdateInterval not elapsed).
+  client.setTimeOffset(3600);
+  unsigned long adjusted = client.getUnixTime();
+  long delta = (long)adjusted - (long)base;
+  check(delta >= 3598 && delta <= 3602, "+3600 s offset reflected on next call");
+
+  // Reverse to zero.
+  client.setTimeOffset(0);
+  unsigned long restored = client.getUnixTime();
+  delta = (long)restored - (long)base;
+  check(delta >= 0 && delta <= 2, "offset=0 reflected immediately after reversal");
+}
+
+// ── stale time preservation ──────────────────────────────────────────────────
+
+void test_stale_time() {
+  Serial.println("\n-- stale time preserved when resync fails (wait ~70 s) --");
+  WiFiUDP udp;
+  EasyNTPClient client(udp, "pool.ntp.org");
+
+  // Populate mServerTime with a good sync.
+  unsigned long good = client.getUnixTime();
+  check(good > MIN_UNIX_2024, "initial sync succeeds before WiFi drop");
+
+  // Drop WiFi and wait for mUpdateInterval (60 s default) to expire so the
+  // next getUnixTime() call attempts a resync, fails, and should return the
+  // preserved mServerTime + millis() drift.
+  WiFi.disconnect();
+  Serial.println("   WiFi disconnected. Waiting 65 s...");
+  delay(65000);
+
+  unsigned long stale = client.getUnixTime();
+  long drift = (long)stale - (long)good;
+  // Allow 63-72 s: 65 s delay plus up to 7 s for sync timeout polling.
+  check(drift >= 63 && drift <= 72, "stale time preserved and advancing during no-WiFi");
+
+  // Reconnect before the next test group.
+  wifi_connect();
+}
+
 // ── entry points ─────────────────────────────────────────────────────────────
 
 void setup() {
@@ -101,6 +153,8 @@ void setup() {
   test_constants();
   test_basic_sync();
   test_client_reuse();
+  test_offset_immediate();
+  test_stale_time();
 
   Serial.println("\n=== Results ===");
   Serial.print(g_passed); Serial.println(" passed");
