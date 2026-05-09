@@ -40,46 +40,54 @@ void EasyNTPClient::setTimeOffset (int offset) {
 
 
 unsigned long EasyNTPClient::getServerTime () {
-    static int udpInited = this->mUdp->begin(123); // open socket on arbitrary port
-    // Only the first four bytes of an outgoing NTP packet need to be set
-    // appropriately, the rest can be whatever.
-    const long ntpFirstFourBytes = 0xEC0600E3; // NTP request header
+    int udpInited = this->mUdp->begin(NTP_REQUEST_PORT);
+
+    // Only the first four bytes of an NTP request need to be set. The rest
+    // must be zero so the server does not interpret them as timestamp offsets.
+    byte packetBuffer[NTP_PACKET_SIZE] = {0};
+    packetBuffer[0] = NTP_HEADER_LI | NTP_HEADER_VN | NTP_HEADER_MODE;
+    // byte 1 (stratum) stays 0 - server ignores client stratum
+    packetBuffer[2] = NTP_HEADER_POLL;
+    packetBuffer[3] = NTP_HEADER_PRECISION;
 
     // Fail if WiFiUdp.begin() could not init a socket
-    if (! udpInited)
-    return 0;
+    if (!udpInited) {
+      this->mUdp->stop();
+      return 0;
+    }
 
     // Clear received data from possible stray received packets
     this->mUdp->flush();
 
     // Send an NTP request
-    if (! (this->mUdp->beginPacket(this->mServerPool, 123) // 123 is the NTP port
-    && this->mUdp->write((byte *)&ntpFirstFourBytes, 48) == 48
-    && this->mUdp->endPacket()))
-    return 0;       // sending request failed
+    if (!(this->mUdp->beginPacket(this->mServerPool, NTP_SERVER_PORT)
+    && this->mUdp->write(packetBuffer, NTP_PACKET_SIZE) == NTP_PACKET_SIZE
+    && this->mUdp->endPacket())) {
+      this->mUdp->stop();
+      return 0;       // sending request failed
+    }
 
     // Wait for response; check every pollIntv ms up to maxPoll times
     const int pollIntv = 150;   // poll every this many ms
     const byte maxPoll = 15;    // poll up to this many times
     int pktLen;       // received packet length
-    for (byte i=0; i<maxPoll; i++) {
-    if ((pktLen = this->mUdp->parsePacket()) == 48)
-      break;
-    delay(pollIntv);
+    for (byte i = 0; i < maxPoll; i++) {
+      if ((pktLen = this->mUdp->parsePacket()) == NTP_PACKET_SIZE)
+        break;
+      delay(pollIntv);
     }
-    if (pktLen != 48)
-    return 0;       // no correct packet received
+    if (pktLen != NTP_PACKET_SIZE) {
+      this->mUdp->stop();
+      return 0;       // no correct packet received
+    }
 
-    // Read and discard the first useless bytes
-    // Set useless to 32 for speed; set to 40 for accuracy.
-    const byte useless = 40;
-    for (byte i = 0; i < useless; ++i)
-    this->mUdp->read();
+    this->mUdp->read(packetBuffer, NTP_PACKET_SIZE);
 
-    // Read the integer part of sending time
-    unsigned long time = this->mUdp->read();  // NTP time
-    for (byte i = 1; i < 4; i++)
-    time = time << 8 | this->mUdp->read();
+    // Read the integer part (32 bits) of the Transmit Timestamp at offset 40
+    unsigned long time = packetBuffer[NTP_TX_TIMESTAMP_OFFSET];
+    time = time << 8 | packetBuffer[NTP_TX_TIMESTAMP_OFFSET + 1];
+    time = time << 8 | packetBuffer[NTP_TX_TIMESTAMP_OFFSET + 2];
+    time = time << 8 | packetBuffer[NTP_TX_TIMESTAMP_OFFSET + 3];
 
     // Round to the nearest second if we want accuracy
     // The fractionary part is the next byte divided by 256: if it is
@@ -87,10 +95,10 @@ unsigned long EasyNTPClient::getServerTime () {
     // for an assumed network delay of 50ms, and (0.5-0.05)*256=115;
     // additionally, we account for how much we delayed reading the packet
     // since its arrival, which we assume on average to be pollIntv/2.
-    time += (this->mUdp->read() > 115 - pollIntv/8);
+    time += (packetBuffer[NTP_TX_TIMESTAMP_OFFSET + 4] > 115 - pollIntv / 8);
 
-    // Discard the rest of the packet
     this->mUdp->flush();
+    this->mUdp->stop();
 
     return time + this->mOffset - 2208988800ul;   // convert NTP time to Unix time
 }
