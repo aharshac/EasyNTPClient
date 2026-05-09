@@ -52,6 +52,43 @@ void test_constants() {
         "header byte 0 matches original magic constant 0xE3");
 }
 
+// ── basic sync ───────────────────────────────────────────────────────────────
+
+void test_basic_sync() {
+  Serial.println("\n-- basic sync --");
+  WiFiUDP udp;
+  EasyNTPClient client(udp, "pool.ntp.org");
+
+  unsigned long t = client.getUnixTime();
+  check(t > MIN_UNIX_2024, "time is after 2024-01-01");
+  check(t < MAX_UNIX_2030, "time is before 2030-01-01");
+}
+
+// ── socket reuse ─────────────────────────────────────────────────────────────
+
+void test_client_reuse() {
+  Serial.println("\n-- socket reuse across client instances --");
+
+  // Both clients share the same WiFiUDP object. Without Fix B+C the second
+  // begin() is skipped (static flag) and the second sync fails.
+  WiFiUDP udp;
+  unsigned long t1 = 0, t2 = 0;
+
+  {
+    EasyNTPClient c1(udp, "pool.ntp.org");
+    t1 = c1.getUnixTime(); // opens socket, syncs, closes socket (Fix B)
+  }
+  delay(500);
+  {
+    EasyNTPClient c2(udp, "pool.ntp.org");
+    t2 = c2.getUnixTime(); // Fix C re-runs begin(); Fix B already closed it cleanly
+  }
+
+  check(t1 > MIN_UNIX_2024, "first client syncs successfully");
+  check(t2 > MIN_UNIX_2024, "second client syncs on same UDP object");
+  check(t2 >= t1 && (t2 - t1) < 5, "timestamps consistent between clients");
+}
+
 // ── entry points ─────────────────────────────────────────────────────────────
 
 void setup() {
@@ -62,6 +99,8 @@ void setup() {
   wifi_connect();
 
   test_constants();
+  test_basic_sync();
+  test_client_reuse();
 
   Serial.println("\n=== Results ===");
   Serial.print(g_passed); Serial.println(" passed");
