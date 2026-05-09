@@ -50,11 +50,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-arduino-${{ matrix.config.fqbn }}-
 
-      - name: Remove EasyNTPClient library from cache
-        run: |
-          tree -L 2 ~/Arduino/libraries
-          rm -rf ~/Arduino/libraries/EasyNTPClient
-
       - name: Compile sketch
         uses: arduino/compile-sketches@v1
         with:
@@ -65,7 +60,3 @@ jobs:
           libraries: |
             - source-path: ./
             - name: WiFiEsp
-
-      - name: Show Arduino directory structure
-        if: always()
-        run: tree -L 2 ~/Arduino
