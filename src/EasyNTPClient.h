@@ -17,6 +17,17 @@
 #include "Arduino.h"
 #include <Udp.h>
 
+#define NTP_PACKET_SIZE         48          // total NTP packet size in bytes
+#define NTP_TX_TIMESTAMP_OFFSET 40          // byte offset of Transmit Timestamp field
+#define NTP_SERVER_PORT         123         // well-known NTP UDP port
+#define NTP_REQUEST_PORT        1123        // local UDP socket port
+
+#define NTP_HEADER_LI           0b11000000  // Leap Indicator = 3 (unsynchronized)
+#define NTP_HEADER_VN           0b00100000  // Version Number = 4
+#define NTP_HEADER_MODE         0b00000011  // Mode = 3 (client)
+#define NTP_HEADER_POLL         6           // poll interval as log2 seconds (2^6 = 64 s)
+#define NTP_HEADER_PRECISION    0xEC        // system clock precision in log2 seconds
+
 class EasyNTPClient
 {
   public:
@@ -31,7 +42,7 @@ class EasyNTPClient
     UDP *mUdp;
     const char* mServerPool = "pool.ntp.org";
     int mOffset = 0;
-    unsigned int mUpdateInterval = 60000;
+    uint32_t mUpdateInterval = 60000;
     unsigned long mLastUpdate = 0;
     long mServerTime = 0;
     unsigned long getServerTime();
