@@ -1,12 +1,28 @@
 /*
-  EasyNTPClient test suite — NodeMCU (ESP8266)
+  EasyNTPClient test suite — ESP8266, ESP32, Uno+ESP-01
   Open Serial Monitor at 115200 baud after flashing.
   Fill in WIFI_SSID and WIFI_PASSWORD before flashing.
 */
 
-#include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
+#if defined(ESP8266)
+  #include <ESP8266WiFi.h>
+  #include <WiFiUdp.h>
+#elif defined(ESP32)
+  #include <WiFi.h>
+  #include <WiFiUdp.h>
+#else
+  #include <SoftwareSerial.h>
+  #include <WiFiEsp.h>
+  #include <WiFiEspUdp.h>
+#endif
 #include <EasyNTPClient.h>
+
+#if defined(ESP8266) || defined(ESP32)
+  using NTPUdp = WiFiUDP;
+#else
+  static SoftwareSerial esp_serial(3, 2);  // D3→ESP-01 TX, D2→ESP-01 RX
+  using NTPUdp = WiFiEspUDP;
+#endif
 
 const char* WIFI_SSID     = "<SSID>";
 const char* WIFI_PASSWORD = "<PASSWORD>";
@@ -56,7 +72,7 @@ void test_constants() {
 
 void test_basic_sync() {
   Serial.println("\n-- basic sync --");
-  WiFiUDP udp;
+  NTPUdp udp;
   EasyNTPClient client(udp, "pool.ntp.org");
 
   unsigned long t = client.getUnixTime();
@@ -69,9 +85,9 @@ void test_basic_sync() {
 void test_client_reuse() {
   Serial.println("\n-- socket reuse across client instances --");
 
-  // Both clients share the same WiFiUDP object. Without Fix B+C the second
+  // Both clients share the same UDP object. Without Fix B+C the second
   // begin() is skipped (static flag) and the second sync fails.
-  WiFiUDP udp;
+  NTPUdp udp;
   unsigned long t1 = 0, t2 = 0;
 
   {
@@ -93,7 +109,7 @@ void test_client_reuse() {
 
 void test_offset_immediate() {
   Serial.println("\n-- offset change takes effect without resync --");
-  WiFiUDP udp;
+  NTPUdp udp;
   EasyNTPClient client(udp, "pool.ntp.org");
 
   // Sync once with offset = 0; capture base time.
@@ -118,7 +134,7 @@ void test_offset_immediate() {
 
 void test_was_updated() {
   Serial.println("\n-- wasUpdated() flag --");
-  WiFiUDP udp;
+  NTPUdp udp;
   EasyNTPClient client(udp, "pool.ntp.org");
 
   check(!client.wasUpdated(), "wasUpdated() is false before first sync");
@@ -131,7 +147,7 @@ void test_was_updated() {
 
 void test_set_ntp_server() {
   Serial.println("\n-- setNTPServer() / getNTPServer() --");
-  WiFiUDP udp;
+  NTPUdp udp;
   EasyNTPClient client(udp, "pool.ntp.org");
 
   check(strcmp(client.getNTPServer(), "pool.ntp.org") == 0,
@@ -149,7 +165,7 @@ void test_set_ntp_server() {
 
 void test_set_update_interval() {
   Serial.println("\n-- setUpdateInterval() / getUpdateInterval() / 4-arg constructor --");
-  WiFiUDP udp;
+  NTPUdp udp;
 
   EasyNTPClient client(udp, "pool.ntp.org");
   client.setUpdateInterval(30);
@@ -165,8 +181,9 @@ void test_set_update_interval() {
 // ── stale time preservation ──────────────────────────────────────────────────
 
 void test_stale_time() {
+#if defined(ESP8266) || defined(ESP32)
   Serial.println("\n-- stale time preserved when resync fails (wait ~70 s) --");
-  WiFiUDP udp;
+  NTPUdp udp;
   EasyNTPClient client(udp, "pool.ntp.org");
 
   // Populate mServerTime with a good sync.
@@ -187,6 +204,10 @@ void test_stale_time() {
 
   // Reconnect before the next test group.
   wifi_connect();
+#else
+  Serial.println("\n-- stale time: skipped"
+                 " (WiFiEsp does not support WiFi.disconnect() on AVR) --");
+#endif
 }
 
 // ── entry points ─────────────────────────────────────────────────────────────
@@ -195,6 +216,12 @@ void setup() {
   Serial.begin(115200);
   delay(100);
   Serial.println("\n=== EasyNTPClient test suite ===");
+
+#if !defined(ESP8266) && !defined(ESP32)
+  Serial.println("Initializing WiFiEsp with SoftwareSerial on pins D3 (RX) and D2 (TX)...");
+  esp_serial.begin(9600);
+  WiFi.init(&esp_serial);
+#endif
 
   wifi_connect();
 
