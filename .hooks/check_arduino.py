@@ -63,12 +63,12 @@ if any(f.startswith("src/") for f in staged):
             break
 
 
-# 4. NTP epoch constant must remain in EasyNTPClient.cpp
-if "src/EasyNTPClient.cpp" in staged:
-    content = staged_content("src/EasyNTPClient.cpp") or ""
+# 4. NTP epoch offset must be defined in EasyNTPClient.h
+if "src/EasyNTPClient.h" in staged:
+    content = staged_content("src/EasyNTPClient.h") or ""
     if "2208988800" not in content:
         errors.append(
-            "NTP epoch constant (2208988800UL) removed from src/EasyNTPClient.cpp"
+            "NTP_UNIX_EPOCH_OFFSET (2208988800UL) removed from src/EasyNTPClient.h"
         )
 
 
