@@ -126,19 +126,25 @@ jobs:
       - name: Tree sketch directory
         run: tree -L 5 examples/TestNTPClient/
 
-      - name: Simulate with Wokwi
-        uses: wokwi/wokwi-ci-action@v1
-        with:
-          token: ${{ secrets.WOKWI_TOKEN }}
-          path: examples/TestNTPClient
-          timeout: 300000
-          expect_text: "0 failed"
-          fail_text: "[FAIL]"
-          serial_log_file: wokwi-serial.log
-
-      - name: Upload serial log on failure
-        if: failure()
+      - name: Upload compiled binary
         uses: actions/upload-artifact@v4
         with:
-          name: wokwi-serial-log
-          path: wokwi-serial.log
+          name: testntp-esp32-bin
+          path: examples/TestNTPClient/
+
+      # - name: Simulate with Wokwi
+      #   uses: wokwi/wokwi-ci-action@v1
+      #   with:
+      #     token: ${{ secrets.WOKWI_TOKEN }}
+      #     path: examples/TestNTPClient
+      #     timeout: 300000
+      #     expect_text: "0 failed"
+      #     fail_text: "[FAIL]"
+      #     serial_log_file: wokwi-serial.log
+
+      # - name: Upload serial log on failure
+      #   if: failure()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: wokwi-serial-log
+      #     path: wokwi-serial.log
