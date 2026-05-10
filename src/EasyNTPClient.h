@@ -39,9 +39,15 @@ class EasyNTPClient
     EasyNTPClient(UDP &udp);
     EasyNTPClient(UDP& udp, const char* serverPool);
     EasyNTPClient(UDP& udp, const char* serverPool, int offset);
+    EasyNTPClient(UDP& udp, const char* serverPool, int offset, uint32_t updateIntervalSecs);
     int getTimeOffset();
     void setTimeOffset(int offset);
+    const char* getNTPServer();
+    void setNTPServer(const char* serverPool);
+    uint32_t getUpdateInterval();
+    void setUpdateInterval(uint32_t seconds);
     unsigned long getUnixTime();
+    bool wasUpdated();
 
   private:
     UDP *mUdp;
@@ -50,6 +56,7 @@ class EasyNTPClient
     uint32_t mUpdateInterval = 60000;
     unsigned long mLastUpdate = 0;
     long mServerTime = 0;
+    bool mWasUpdated = false;
     unsigned long getServerTime();
 };
 

@@ -30,12 +30,39 @@ EasyNTPClient::EasyNTPClient (UDP &udp, const char* serverPool, int offset) {
   this->mOffset = offset;
 }
 
+EasyNTPClient::EasyNTPClient (UDP &udp, const char* serverPool, int offset, uint32_t updateIntervalSecs) {
+  this->mUdp = &udp;
+  this->mServerPool = serverPool;
+  this->mOffset = offset;
+  this->mUpdateInterval = updateIntervalSecs * 1000;
+}
+
 int EasyNTPClient::getTimeOffset() {
   return this->mOffset;
 }
 
 void EasyNTPClient::setTimeOffset (int offset) {
   this->mOffset = offset;
+}
+
+bool EasyNTPClient::wasUpdated() {
+  return this->mWasUpdated;
+}
+
+const char* EasyNTPClient::getNTPServer() {
+  return this->mServerPool;
+}
+
+void EasyNTPClient::setNTPServer(const char* serverPool) {
+  this->mServerPool = serverPool;
+}
+
+uint32_t EasyNTPClient::getUpdateInterval() {
+  return this->mUpdateInterval / 1000;
+}
+
+void EasyNTPClient::setUpdateInterval(uint32_t seconds) {
+  this->mUpdateInterval = seconds * 1000;
 }
 
 
@@ -110,6 +137,9 @@ unsigned long EasyNTPClient::getUnixTime() {
     if (fetched > 0) {
       this->mServerTime = fetched;
       this->mLastUpdate = millis();
+      this->mWasUpdated = true;
+    } else {
+      this->mWasUpdated = false;
     }
   }
   return this->mServerTime + ((millis() - this->mLastUpdate) / 1000) + this->mOffset;

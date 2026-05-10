@@ -114,6 +114,54 @@ void test_offset_immediate() {
   check(delta >= 0 && delta <= 2, "offset=0 reflected immediately after reversal");
 }
 
+// ── wasUpdated flag ──────────────────────────────────────────────────────────
+
+void test_was_updated() {
+  Serial.println("\n-- wasUpdated() flag --");
+  WiFiUDP udp;
+  EasyNTPClient client(udp, "pool.ntp.org");
+
+  check(!client.wasUpdated(), "wasUpdated() is false before first sync");
+
+  client.getUnixTime();
+  check(client.wasUpdated(), "wasUpdated() is true after successful sync");
+}
+
+// ── NTP server get/set ───────────────────────────────────────────────────────
+
+void test_set_ntp_server() {
+  Serial.println("\n-- setNTPServer() / getNTPServer() --");
+  WiFiUDP udp;
+  EasyNTPClient client(udp, "pool.ntp.org");
+
+  check(strcmp(client.getNTPServer(), "pool.ntp.org") == 0,
+        "getNTPServer() returns initial pool");
+
+  client.setNTPServer("time.cloudflare.com");
+  check(strcmp(client.getNTPServer(), "time.cloudflare.com") == 0,
+        "getNTPServer() reflects setNTPServer()");
+
+  unsigned long t = client.getUnixTime();
+  check(t > MIN_UNIX_2024, "syncs from server set via setNTPServer()");
+}
+
+// ── update interval get/set ───────────────────────────────────────────────────
+
+void test_set_update_interval() {
+  Serial.println("\n-- setUpdateInterval() / getUpdateInterval() / 4-arg constructor --");
+  WiFiUDP udp;
+
+  EasyNTPClient client(udp, "pool.ntp.org");
+  client.setUpdateInterval(30);
+  check(client.getUpdateInterval() == 30, "getUpdateInterval() reflects setUpdateInterval(30 s)");
+
+  EasyNTPClient client2(udp, "pool.ntp.org", 0, 120);
+  check(client2.getUpdateInterval() == 120, "4-arg constructor sets update interval to 120 s");
+
+  unsigned long t = client2.getUnixTime();
+  check(t > MIN_UNIX_2024, "syncs with interval set via 4-arg constructor");
+}
+
 // ── stale time preservation ──────────────────────────────────────────────────
 
 void test_stale_time() {
@@ -154,6 +202,9 @@ void setup() {
   test_basic_sync();
   test_client_reuse();
   test_offset_immediate();
+  test_was_updated();
+  test_set_ntp_server();
+  test_set_update_interval();
   test_stale_time();
 
   Serial.println("\n=== Results ===");
