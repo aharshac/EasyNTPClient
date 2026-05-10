@@ -38,6 +38,10 @@ void EasyNTPClient::setTimeOffset (int offset) {
   this->mOffset = offset;
 }
 
+bool EasyNTPClient::wasUpdated() {
+  return this->mWasUpdated;
+}
+
 
 unsigned long EasyNTPClient::getServerTime () {
     int udpInited = this->mUdp->begin(NTP_REQUEST_PORT);
@@ -110,6 +114,9 @@ unsigned long EasyNTPClient::getUnixTime() {
     if (fetched > 0) {
       this->mServerTime = fetched;
       this->mLastUpdate = millis();
+      this->mWasUpdated = true;
+    } else {
+      this->mWasUpdated = false;
     }
   }
   return this->mServerTime + ((millis() - this->mLastUpdate) / 1000) + this->mOffset;

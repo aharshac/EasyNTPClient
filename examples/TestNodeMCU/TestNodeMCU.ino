@@ -114,6 +114,19 @@ void test_offset_immediate() {
   check(delta >= 0 && delta <= 2, "offset=0 reflected immediately after reversal");
 }
 
+// ── wasUpdated flag ──────────────────────────────────────────────────────────
+
+void test_was_updated() {
+  Serial.println("\n-- wasUpdated() flag --");
+  WiFiUDP udp;
+  EasyNTPClient client(udp, "pool.ntp.org");
+
+  check(!client.wasUpdated(), "wasUpdated() is false before first sync");
+
+  client.getUnixTime();
+  check(client.wasUpdated(), "wasUpdated() is true after successful sync");
+}
+
 // ── stale time preservation ──────────────────────────────────────────────────
 
 void test_stale_time() {
@@ -154,6 +167,7 @@ void setup() {
   test_basic_sync();
   test_client_reuse();
   test_offset_immediate();
+  test_was_updated();
   test_stale_time();
 
   Serial.println("\n=== Results ===");

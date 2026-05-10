@@ -42,6 +42,7 @@ class EasyNTPClient
     int getTimeOffset();
     void setTimeOffset(int offset);
     unsigned long getUnixTime();
+    bool wasUpdated();
 
   private:
     UDP *mUdp;
@@ -50,6 +51,7 @@ class EasyNTPClient
     uint32_t mUpdateInterval = 60000;
     unsigned long mLastUpdate = 0;
     long mServerTime = 0;
+    bool mWasUpdated = false;
     unsigned long getServerTime();
 };
 
