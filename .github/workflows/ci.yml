@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - master
-  pull_request:
+  # pull_request:
   workflow_dispatch:
 
 jobs:
@@ -117,8 +117,8 @@ jobs:
           cli-compile-flags: |
             - --export-binaries
 
-      - name: Tree the compiled sketch
-        run: tree -L 5 build/
+      - name: Tree sketch directory
+        run: tree -L 5 examples/TestNTPClient/
 
       - name: Simulate with Wokwi
         uses: wokwi/wokwi-ci-action@v1
