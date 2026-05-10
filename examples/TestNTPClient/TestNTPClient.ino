@@ -10,6 +10,7 @@
 #elif defined(ESP32)
   #include <WiFi.h>
   #include <WiFiUdp.h>
+  #include "esp_task_wdt.h"
 #else
   #include <SoftwareSerial.h>
   #include <WiFiEsp.h>
@@ -195,7 +196,12 @@ void test_stale_time() {
   // preserved mServerTime + millis() drift.
   WiFi.disconnect();
   Serial.println("   WiFi disconnected. Waiting 65 s...");
+#if defined(ESP32)
+  // vTaskDelay() does not reset the TWDT; feed it once per second.
+  for (int i = 0; i < 65; i++) { delay(1000); esp_task_wdt_reset(); }
+#else
   delay(65000);
+#endif
 
   unsigned long stale = client.getUnixTime();
   long drift = (long)stale - (long)good;
@@ -212,6 +218,15 @@ void test_stale_time() {
 
 // ── entry points ─────────────────────────────────────────────────────────────
 
+#define RUN(n, fn) do { \
+  Serial.println("\n>>> [" #n "/8] " #fn); \
+  int _p = g_passed, _f = g_failed; \
+  fn(); \
+  Serial.print("<<< [" #n "/8] "); \
+  Serial.print(g_passed - _p); Serial.print(" passed, "); \
+  Serial.print(g_failed - _f); Serial.println(" failed"); \
+} while (0)
+
 void setup() {
   Serial.begin(115200);
   delay(100);
@@ -225,18 +240,20 @@ void setup() {
 
   wifi_connect();
 
-  test_constants();
-  test_basic_sync();
-  test_client_reuse();
-  test_offset_immediate();
-  test_was_updated();
-  test_set_ntp_server();
-  test_set_update_interval();
-  test_stale_time();
+  RUN(1, test_constants);
+  RUN(2, test_basic_sync);
+  RUN(3, test_client_reuse);
+  RUN(4, test_offset_immediate);
+  RUN(5, test_was_updated);
+  RUN(6, test_set_ntp_server);
+  RUN(7, test_set_update_interval);
+  RUN(8, test_stale_time);
 
   Serial.println("\n=== Results ===");
   Serial.print(g_passed); Serial.println(" passed");
   Serial.print(g_failed); Serial.println(" failed");
 }
+
+#undef RUN
 
 void loop() {}
