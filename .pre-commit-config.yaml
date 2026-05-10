@@ -19,6 +19,7 @@ repos:
     hooks:
       - id: markdownlint
         args: [--fix]
+        exclude: ^CHANGELOG\.md$
 
   - repo: local
     hooks:
