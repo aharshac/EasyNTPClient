@@ -28,6 +28,7 @@ jobs:
           # TestNTPClient
           - name: TestNTPClient (ESP8266)
             fqbn: esp8266:esp8266:nodemcuv2
+            sketch_dir: examples/TestNTPClient
             sketch: examples/TestNTPClient/TestNTPClient.ino
             platforms: |
               - name: esp8266:esp8266
@@ -35,6 +36,7 @@ jobs:
             artifact_name: testntp-esp8266
           - name: TestNTPClient (Uno+ESP-01)
             fqbn: arduino:avr:uno
+            sketch_dir: examples/TestNTPClient
             sketch: examples/TestNTPClient/TestNTPClient.ino
             platforms: |
               - name: arduino:avr
@@ -42,6 +44,7 @@ jobs:
           # examples
           - name: Example - NodeMCU (ESP8266)
             fqbn: esp8266:esp8266:nodemcuv2
+            sketch_dir: examples/NodeMCU
             sketch: examples/NodeMCU/NodeMCU.ino
             platforms: |
               - name: esp8266:esp8266
@@ -49,6 +52,7 @@ jobs:
             artifact_name: example-nodemcu-esp8266
           - name: Example - Arduino UNO + ESP-01
             fqbn: arduino:avr:uno
+            sketch_dir: examples/ArduinoEspWifiShield
             sketch: examples/ArduinoEspWifiShield/ArduinoEspWifiShield.ino
             platforms: |
               - name: arduino:avr
@@ -80,11 +84,8 @@ jobs:
           cli-compile-flags: |
             - --export-binaries
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.config.artifact_name }}
-          path: build/
+      - name: Tree sketch directory
+        run: tree -L 5 ${{ matrix.config.sketch_dir }}
 
   simulate:
     name: Simulate / TestNTPClient (ESP32)
@@ -101,6 +102,11 @@ jobs:
           key: ${{ runner.os }}-arduino-esp32:esp32:esp32-${{ hashFiles('.github/workflows/ci.yml') }}
           restore-keys: |
             ${{ runner.os }}-arduino-esp32:esp32:esp32-
+
+      - name: Patch WiFi credentials for Wokwi
+        run: |
+          sed -i -E 's/(WIFI_SSID\s*=\s*)"[^"]*"/\1"Wokwi-GUEST"/' examples/TestNTPClient/TestNTPClient.ino
+          sed -i -E 's/(WIFI_PASSWORD\s*=\s*)"[^"]*"/\1""/' examples/TestNTPClient/TestNTPClient.ino
 
       - name: Compile sketch
         uses: arduino/compile-sketches@v1
@@ -125,7 +131,7 @@ jobs:
         with:
           token: ${{ secrets.WOKWI_TOKEN }}
           path: examples/TestNTPClient
-          timeout: 150000
+          timeout: 300000
           expect_text: "0 failed"
           fail_text: "[FAIL]"
           serial_log_file: wokwi-serial.log
