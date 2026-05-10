@@ -145,6 +145,23 @@ void test_set_ntp_server() {
   check(t > MIN_UNIX_2024, "syncs from server set via setNTPServer()");
 }
 
+// ── update interval get/set ───────────────────────────────────────────────────
+
+void test_set_update_interval() {
+  Serial.println("\n-- setUpdateInterval() / getUpdateInterval() / 4-arg constructor --");
+  WiFiUDP udp;
+
+  EasyNTPClient client(udp, "pool.ntp.org");
+  client.setUpdateInterval(30);
+  check(client.getUpdateInterval() == 30, "getUpdateInterval() reflects setUpdateInterval(30 s)");
+
+  EasyNTPClient client2(udp, "pool.ntp.org", 0, 120);
+  check(client2.getUpdateInterval() == 120, "4-arg constructor sets update interval to 120 s");
+
+  unsigned long t = client2.getUnixTime();
+  check(t > MIN_UNIX_2024, "syncs with interval set via 4-arg constructor");
+}
+
 // ── stale time preservation ──────────────────────────────────────────────────
 
 void test_stale_time() {
@@ -187,6 +204,7 @@ void setup() {
   test_offset_immediate();
   test_was_updated();
   test_set_ntp_server();
+  test_set_update_interval();
   test_stale_time();
 
   Serial.println("\n=== Results ===");
