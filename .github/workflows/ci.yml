@@ -25,15 +25,28 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - name: NodeMCU (ESP8266)
+          # TestNTPClient
+          - name: TestNTPClient (ESP8266)
             fqbn: esp8266:esp8266:nodemcuv2
-            sketch: examples/NodeMCU/NodeMCU.ino
+            sketch: examples/TestNTPClient/TestNTPClient.ino
             platforms: |
               - name: esp8266:esp8266
                 source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
-          - name: TestNodeMCU (ESP8266)
+          - name: TestNTPClient (ESP32)
+            fqbn: esp32:esp32:esp32
+            sketch: examples/TestNTPClient/TestNTPClient.ino
+            platforms: |
+              - name: esp32:esp32
+                source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          - name: TestNTPClient (Uno+ESP-01)
+            fqbn: arduino:avr:uno
+            sketch: examples/TestNTPClient/TestNTPClient.ino
+            platforms: |
+              - name: arduino:avr
+          # examples
+          - name: NodeMCU (ESP8266)
             fqbn: esp8266:esp8266:nodemcuv2
-            sketch: examples/TestNodeMCU/TestNodeMCU.ino
+            sketch: examples/NodeMCU/NodeMCU.ino
             platforms: |
               - name: esp8266:esp8266
                 source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
