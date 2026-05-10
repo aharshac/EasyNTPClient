@@ -127,6 +127,24 @@ void test_was_updated() {
   check(client.wasUpdated(), "wasUpdated() is true after successful sync");
 }
 
+// ── NTP server get/set ───────────────────────────────────────────────────────
+
+void test_set_ntp_server() {
+  Serial.println("\n-- setNTPServer() / getNTPServer() --");
+  WiFiUDP udp;
+  EasyNTPClient client(udp, "pool.ntp.org");
+
+  check(strcmp(client.getNTPServer(), "pool.ntp.org") == 0,
+        "getNTPServer() returns initial pool");
+
+  client.setNTPServer("time.cloudflare.com");
+  check(strcmp(client.getNTPServer(), "time.cloudflare.com") == 0,
+        "getNTPServer() reflects setNTPServer()");
+
+  unsigned long t = client.getUnixTime();
+  check(t > MIN_UNIX_2024, "syncs from server set via setNTPServer()");
+}
+
 // ── stale time preservation ──────────────────────────────────────────────────
 
 void test_stale_time() {
@@ -168,6 +186,7 @@ void setup() {
   test_client_reuse();
   test_offset_immediate();
   test_was_updated();
+  test_set_ntp_server();
   test_stale_time();
 
   Serial.println("\n=== Results ===");

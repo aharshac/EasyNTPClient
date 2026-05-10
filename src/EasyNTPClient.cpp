@@ -42,6 +42,14 @@ bool EasyNTPClient::wasUpdated() {
   return this->mWasUpdated;
 }
 
+const char* EasyNTPClient::getNTPServer() {
+  return this->mServerPool;
+}
+
+void EasyNTPClient::setNTPServer(const char* serverPool) {
+  this->mServerPool = serverPool;
+}
+
 
 unsigned long EasyNTPClient::getServerTime () {
     int udpInited = this->mUdp->begin(NTP_REQUEST_PORT);
