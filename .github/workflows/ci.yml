@@ -28,33 +28,35 @@ jobs:
           # TestNTPClient
           - name: TestNTPClient (ESP8266)
             fqbn: esp8266:esp8266:nodemcuv2
+            sketch_dir: examples/TestNTPClient
             sketch: examples/TestNTPClient/TestNTPClient.ino
             platforms: |
               - name: esp8266:esp8266
                 source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
-          - name: TestNTPClient (ESP32)
-            fqbn: esp32:esp32:esp32
-            sketch: examples/TestNTPClient/TestNTPClient.ino
-            platforms: |
-              - name: esp32:esp32
-                source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+            artifact_name: testntp-esp8266
           - name: TestNTPClient (Uno+ESP-01)
             fqbn: arduino:avr:uno
+            sketch_dir: examples/TestNTPClient
             sketch: examples/TestNTPClient/TestNTPClient.ino
             platforms: |
               - name: arduino:avr
+            artifact_name: testntp-uno
           # examples
-          - name: NodeMCU (ESP8266)
+          - name: Example - NodeMCU (ESP8266)
             fqbn: esp8266:esp8266:nodemcuv2
+            sketch_dir: examples/NodeMCU
             sketch: examples/NodeMCU/NodeMCU.ino
             platforms: |
               - name: esp8266:esp8266
                 source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
-          - name: Arduino UNO
+            artifact_name: example-nodemcu-esp8266
+          - name: Example - Arduino UNO + ESP-01
             fqbn: arduino:avr:uno
+            sketch_dir: examples/ArduinoEspWifiShield
             sketch: examples/ArduinoEspWifiShield/ArduinoEspWifiShield.ino
             platforms: |
               - name: arduino:avr
+            artifact_name: example-arduinouno
 
     steps:
       - uses: actions/checkout@v6
@@ -79,3 +81,66 @@ jobs:
           libraries: |
             - source-path: ./
             - name: WiFiEsp
+          cli-compile-flags: |
+            - --export-binaries
+
+      - name: Tree sketch directory
+        run: tree -L 5 ${{ matrix.config.sketch_dir }}
+
+  simulate:
+    name: Simulate / TestNTPClient (ESP32)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache Arduino platforms and libraries
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.arduino15/packages
+            ~/Arduino/libraries
+          key: ${{ runner.os }}-arduino-esp32:esp32:esp32-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-arduino-esp32:esp32:esp32-
+
+      - name: Patch WiFi credentials for Wokwi
+        run: |
+          sed -i -E 's/(WIFI_SSID\s*=\s*)"[^"]*"/\1"Wokwi-GUEST"/' examples/TestNTPClient/TestNTPClient.ino
+          sed -i -E 's/(WIFI_PASSWORD\s*=\s*)"[^"]*"/\1""/' examples/TestNTPClient/TestNTPClient.ino
+
+      - name: Compile sketch
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: esp32:esp32:esp32
+          platforms: |
+            - name: esp32:esp32
+              source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          sketch-paths: |
+            - examples/TestNTPClient/TestNTPClient.ino
+          libraries: |
+            - source-path: ./
+            - name: WiFiEsp
+          cli-compile-flags: |
+            - --export-binaries
+
+      - name: Tree sketch directory
+        run: tree -L 5 examples/TestNTPClient/
+
+      - name: Upload compiled binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: testntp-esp32-bin
+          path: examples/TestNTPClient/
+
+      - name: Simulate with Wokwi
+        uses: wokwi/wokwi-ci-action@v1
+        with:
+          token: ${{ secrets.WOKWI_TOKEN }}
+          path: examples/TestNTPClient
+          timeout: 300000
+          expect_text: "0 failed"
+          fail_text: "[FAIL]"
+          serial_log_file: wokwi-serial.log
+
+      - name: Cat serial log
+        run: cat wokwi-serial.log

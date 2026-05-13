@@ -230,6 +230,23 @@ void test_stale_time() {
   Serial.print(g_failed - _f); Serial.println(F(" failed")); \
 } while (0)
 
+#if defined(ESP32)
+void setupEsp32Watchdog() {
+  // 30 s — long enough for slow NTP in Wokwi simulation; still catches infinite loops.
+  esp_task_wdt_config_t twdt_config = {
+      .timeout_ms = 30000,
+      .idle_core_mask = 0,
+      .trigger_panic = true
+  };
+  // Arduino framework may have already initialized TWDT with a 5 s timeout.
+  // esp_task_wdt_init() fails in that case, so use reconfigure() first.
+  if (esp_task_wdt_reconfigure(&twdt_config) != ESP_OK)
+    esp_task_wdt_init(&twdt_config);
+  // ESP_ERR_INVALID_ARG means already subscribed by the framework — still fine.
+  esp_task_wdt_add(NULL);
+}
+#endif
+
 void setup() {
   Serial.begin(115200);
   delay(100);
@@ -238,6 +255,11 @@ void setup() {
 #if !defined(ESP8266) && !defined(ESP32)
   esp_serial.begin(9600);
   WiFi.init(&esp_serial);
+#endif
+
+#if defined(ESP32)
+  setupEsp32Watchdog();
+  Serial.println(F("ESP32 watchdog timer configured (30 s timeout)"));
 #endif
 
   wifi_connect();

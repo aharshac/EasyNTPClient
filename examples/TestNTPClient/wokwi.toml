@@ -1,0 +1,5 @@
+[wokwi]
+version = 1
+firmware = "build/esp32.esp32.esp32/TestNTPClient.ino.bin"
+elf     = "build/esp32.esp32.esp32/TestNTPClient.ino.elf"
+rfc2217ServerPort = 4000
